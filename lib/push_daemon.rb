@@ -3,22 +3,22 @@ require "socket"
 
 $:.unshift File.dirname(__FILE__)
 require 'google_api_worker'
-require 'udp_socket_listener'
+require 'listener'
 
 class PushDaemon
 
   def start
     @worker = GoogleApiWorker.new(10)
-    sock_listener = UDPSocketListener.new(6889)
-    process_requests(sock_listener)
+    listener = Listener.new(6889)
+    process_requests(listener)
   end
 
 #------------------------------------------------------------------------------
 private
 
 
-  def process_requests(socket_source)
-    socket = socket_source.socket
+  def process_requests(listener)
+    socket = listener.socket
     while data = socket.recvfrom(4096)
       case data[0].split.first
         when "PING"

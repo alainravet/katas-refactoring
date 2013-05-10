@@ -1,4 +1,4 @@
-class UDPSocketListener
+class Listener
 
   attr_reader :socket
 
