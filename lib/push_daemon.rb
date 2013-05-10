@@ -3,7 +3,7 @@ require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
 require 'commands_catcher'
 require 'job'
-require 'command_factory'
+require 'commands/command_factory'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
