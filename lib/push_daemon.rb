@@ -36,7 +36,7 @@ class PushDaemon
 
     def start_waiting_for_commands
       @port_binder = PortBinder.new(@port)
-      CommandsCatcher.new(self).listen_on(@port_binder)
+      CommandsCatcher.new(self, @port_binder).wait_for_commands
     end
   public
 

@@ -1,13 +1,14 @@
 class CommandsCatcher
 
-  def initialize(app)
-    @app = app
+  def initialize(app, port_binder)
+    @callback_target  = app
+    @port_binder      = port_binder
   end
 
-  def listen_on(port_binder)
-    socket = port_binder.socket
+  def wait_for_commands
+    socket = @port_binder.socket
     while data = socket.recvfrom(maxlen=4096)
-      @app.call(data)
+      @callback_target.call(data)
     end
   end
 
