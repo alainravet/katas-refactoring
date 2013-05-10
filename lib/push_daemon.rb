@@ -14,13 +14,35 @@ class PushDaemon
     @nof_workers  = nof_workers
   end
 
-  def start
-    @workers_pool = PostToGoogleApiWorkersPool.new(@nof_workers)
-    @port_binder = PortBinder.new(@port)
-    CommandsCatcher.new(self).listen_on(@port_binder)
-  end
+  #-----------------------------------------------------------------------------
+  # QUERIES :
+  #-----------------------------------------------------------------------------
 
   attr_reader :workers_pool, :port_binder
+
+  #-----------------------------------------------------------------------------
+  # COMMANDS :
+  #-----------------------------------------------------------------------------
+
+  def start
+    start_the_workers_pool()
+    start_waiting_for_commands()
+  end
+
+  private
+    def start_the_workers_pool
+      @workers_pool = PostToGoogleApiWorkersPool.new(@nof_workers)
+    end
+
+    def start_waiting_for_commands
+      @port_binder = PortBinder.new(@port)
+      CommandsCatcher.new(self).listen_on(@port_binder)
+    end
+  public
+
+  #-----------------------------------------------------------------------------
+  # CALLBACK :
+  #-----------------------------------------------------------------------------
 
   def call(data)
     command = CommandFactory.from_raw_message(data)
