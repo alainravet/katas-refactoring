@@ -21,7 +21,7 @@ private
 
   def process_requests(listener)
     socket = listener.socket
-    while data = socket.recvfrom(4096)
+    while data = socket.recvfrom(maxlen=4096)
       case data[0].split.first
         when "PING"
           socket.send("PONG", 0, data[1][3], data[1][1])
