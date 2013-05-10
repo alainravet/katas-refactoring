@@ -1,37 +1,24 @@
 require "json"
-require "thread"
-require "httpclient"
 require "socket"
+
+$:.unshift File.dirname(__FILE__)
+require 'google_api_worker'
 
 class PushDaemon
   def initialize
     @queue  = Queue.new
-    @client = HTTPClient.new
     @socket = UDPSocket.new
   end
 
   def start
-    spawn_workers 10
+    worker = GoogleApiWorker.new(10, queue)
     bind_to
     process_requests
   end
 
 #------------------------------------------------------------------------------
 private
-  attr_reader :queue, :client, :socket
-
-  def spawn_workers nof_workers
-    nof_workers.times do
-      Thread.new do
-        while data = queue.pop
-          client.post("https://android.googleapis.com/gcm/send", data, {
-              "Authorization" => "key=AIzaSyCABSTd47XeIH",
-              "Content-Type"  => "application/json"
-          })
-        end
-      end
-    end
-  end
+  attr_reader :queue, :socket
 
   def bind_to
     socket.bind("0.0.0.0", 6889)
