@@ -1,19 +1,13 @@
-require 'command_line'
-require 'address_parts'
+require_relative 'notification_request'
 require 'job'
 
 class CommandFactory
 
-  # data =
-  #   ["PING", ["AF_INET", 55560, "127.0.0.1", "127.0.0.1"]]
-  #   ["SEND t0k3n \"Steve: What is up?\"", ["AF_INET", 55053, "127.0.0.1", "127.0.0.1"]]
-  #
-  def self.from_raw_message(data)
-    command_line  = CommandLine.from_tokens(Shellwords.shellsplit(data[0]))
-    address_parts = AddressParts.new(*data[1])
+  def self.from_raw_message(raw_data)
+    request = NotificationRequest.from(raw_data)
 
-    command_class = COMMAND_FOR_VERB[command_line.verb]
-    command_class.new(command_line, address_parts)
+    command_class = COMMAND_FOR_VERB[request.verb]
+    command_class.new(request)
   end
 
 private
