@@ -1,5 +1,5 @@
 require_relative 'raw_command'
-require 'address_parts'
+require_relative 'address_parts'
 
 class NotificationRequest
 

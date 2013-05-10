@@ -1,4 +1,4 @@
-require_relative 'notification_request'
+require_relative '../inputs/notification_request'
 require 'job'
 
 class JobFactory

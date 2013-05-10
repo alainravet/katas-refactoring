@@ -2,7 +2,7 @@ $:.unshift File.dirname(__FILE__)
 require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
 require 'inputs/commands_catcher'
-require 'inputs/job_factory'
+require 'job/job_factory'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
