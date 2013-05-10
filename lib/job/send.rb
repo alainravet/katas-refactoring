@@ -4,7 +4,7 @@ require 'json'
 
 class Job::Send
 
-  def initialize(command_line_tokens, _, worker)
+  def initialize(command_line_tokens, _, _, worker)
     @command_line_tokens = command_line_tokens
     @worker = worker
   end

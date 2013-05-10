@@ -3,7 +3,7 @@
 module Job
 
   class Ping
-    def initialize(command_line_tokens, address_parts, port_binder)
+    def initialize(command_line_tokens, address_parts, port_binder, _)
       @port_binder = port_binder
       _, @address_parts       = command_line_tokens, address_parts
     end

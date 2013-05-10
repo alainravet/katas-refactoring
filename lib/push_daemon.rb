@@ -30,11 +30,10 @@ class PushDaemon
     address_parts = AddressParts.new(*data[1])
 
     case command_line.verb
-      when "PING"
-        Job::Ping.new(command_line, address_parts, @port_binder).run
-      when "SEND"
-        Job::Send.new(command_line, address_parts, @worker).run
-    end
+      when "PING" then Job::Ping.new(command_line, address_parts, @port_binder, @worker)
+      when "SEND" then Job::Send.new(command_line, address_parts, @port_binder, @worker)
+      else Job::NullJob.new
+    end.run
   end
 
 end
