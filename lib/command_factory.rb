@@ -1,5 +1,5 @@
-require_relative 'command_line'
-require_relative 'address_parts'
+require 'command_line'
+require 'address_parts'
 
 class CommandFactory
 
