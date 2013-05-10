@@ -7,24 +7,28 @@ class PostToGoogleApiWorkersPool
 
   def initialize(nof_workers)
     @nof_workers = nof_workers
+    @queue  = Queue.new
 
-    start
+    create_and_start_workers
   end
 
 #------------------------------------------------------------------------------
   private
 
-    def start
-      @queue  = Queue.new
-      @client = HTTPClient.new
+    def create_and_start_workers
+      client = HTTPClient.new
       @nof_workers.times do
-        Thread.new do
-          while data = queue.pop
-            @client.post("https://android.googleapis.com/gcm/send", data, {
-                "Authorization" => "key=AIzaSyCABSTd47XeIH",
-                "Content-Type"  => "application/json"
-            })
-          end
+        create_and_start_worker(@queue, client)
+      end
+    end
+
+    def create_and_start_worker(queue, client)
+      Thread.new do
+        while data = queue.pop
+          client.post("https://android.googleapis.com/gcm/send", data, {
+              "Authorization" => "key=AIzaSyCABSTd47XeIH",
+              "Content-Type"  => "application/json"
+          })
         end
       end
     end
