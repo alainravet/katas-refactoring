@@ -6,19 +6,18 @@ require 'google_api_worker'
 
 class PushDaemon
   def initialize
-    @queue  = Queue.new
     @socket = UDPSocket.new
   end
 
   def start
-    worker = GoogleApiWorker.new(10, queue)
+    @worker = GoogleApiWorker.new(10)
     bind_to
     process_requests
   end
 
 #------------------------------------------------------------------------------
 private
-  attr_reader :queue, :socket
+  attr_reader :socket
 
   def bind_to
     socket.bind("0.0.0.0", 6889)
@@ -35,7 +34,7 @@ private
                                    "registration_ids" => [$1],
                                    "data" => {"alert" => $2}
                                })
-          queue << json
+          @worker.queue << json
       end
     end
   end

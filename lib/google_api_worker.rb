@@ -3,7 +3,11 @@ require 'thread'
 
 class GoogleApiWorker
 
-  def initialize(nof_workers, queue)
+  attr_reader :queue
+
+  def initialize(nof_workers)
+    @queue  = Queue.new
+
     client = HTTPClient.new
     nof_workers.times do
       Thread.new do
