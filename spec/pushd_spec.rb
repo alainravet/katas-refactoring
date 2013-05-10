@@ -11,7 +11,7 @@ describe "Push Daemon" do
     end
   end
 
-  describe "commands" do
+  describe "inputs" do
     describe "PING" do
       it "responds with PONG" do
         socket.send("PING", 0, "127.0.0.1", 6889)
