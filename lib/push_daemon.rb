@@ -4,6 +4,7 @@ require "socket"
 $:.unshift File.dirname(__FILE__)
 require 'google_api_worker'
 require 'listener'
+require 'commands_catcher'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
@@ -12,7 +13,7 @@ class PushDaemon
   def start
     @worker   = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
     @listener = Listener.new(DEFAULT_PORT)
-    process_requests(self, @listener)
+    CommandsCatcher.new(self).listen(@listener)
   end
 
   def call(data)
@@ -27,16 +28,6 @@ class PushDaemon
                                  "data"             => {"alert" => $2}
                              })
         @worker.queue << json
-    end
-  end
-
-#------------------------------------------------------------------------------
-private
-
-  def process_requests(zelf, listener)
-    socket = listener.socket
-    while data = socket.recvfrom(maxlen=4096)
-      zelf.call(data)
     end
   end
 
