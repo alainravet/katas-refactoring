@@ -2,10 +2,6 @@ require 'shellwords'
 
 class CommandLine  < Struct.new(:tokens)
 
-  def self.from_socket_message(data)
-    new(Shellwords.shellsplit(data[0]))
-  end
-
   #----------------------------------------------------------------------------
   # QUERIES :
   #----------------------------------------------------------------------------

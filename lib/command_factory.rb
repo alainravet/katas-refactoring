@@ -7,7 +7,7 @@ class CommandFactory
   #   ["PING", ["AF_INET", 55560, "127.0.0.1", "127.0.0.1"]]
   #   ["SEND t0k3n \"Steve: What is up?\"", ["AF_INET", 55053, "127.0.0.1", "127.0.0.1"]]
   #
-  def self.from_socket_message(data)
+  def self.from_raw_message(data)
     command_line  = CommandLine.new(Shellwords.shellsplit(data[0]))
     address_parts = AddressParts.new(*data[1])
 

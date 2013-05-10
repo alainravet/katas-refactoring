@@ -18,7 +18,7 @@ class PushDaemon
   attr_reader :worker, :port_binder
 
   def call(data)
-    command = CommandFactory.from_socket_message(data)
+    command = CommandFactory.from_raw_message(data)
     command.run(self)
   end
 
