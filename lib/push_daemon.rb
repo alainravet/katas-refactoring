@@ -5,6 +5,7 @@ $:.unshift File.dirname(__FILE__)
 require 'google_api_worker'
 require 'port_binder'
 require 'commands_catcher'
+require 'job'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
@@ -17,10 +18,9 @@ class PushDaemon
   end
 
   def call(data)
-    socket = @port_binder.socket
     case data[0].split.first
       when "PING"
-        socket.send("PONG", 0, data[1][3], data[1][1])
+        Job::Ping.new(data, @port_binder).run
       when "SEND"
         data[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
         json = JSON.generate({
