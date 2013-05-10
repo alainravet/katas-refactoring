@@ -4,8 +4,8 @@ class CommandsCatcher
     @app = app
   end
 
-  def listen(listener)
-    socket = listener.socket
+  def listen(port_binder)
+    socket = port_binder.socket
     while data = socket.recvfrom(maxlen=4096)
       @app.call(data)
     end

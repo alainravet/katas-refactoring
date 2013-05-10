@@ -1,4 +1,4 @@
-class Listener
+class PortBinder
 
   attr_reader :socket
 

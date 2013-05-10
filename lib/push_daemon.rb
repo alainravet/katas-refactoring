@@ -3,7 +3,7 @@ require "socket"
 
 $:.unshift File.dirname(__FILE__)
 require 'google_api_worker'
-require 'listener'
+require 'port_binder'
 require 'commands_catcher'
 
 class PushDaemon
@@ -12,12 +12,12 @@ class PushDaemon
 
   def start
     @worker   = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
-    @listener = Listener.new(DEFAULT_PORT)
-    CommandsCatcher.new(self).listen(@listener)
+    @port_binder = PortBinder.new(DEFAULT_PORT)
+    CommandsCatcher.new(self).listen(@port_binder)
   end
 
   def call(data)
-    socket = @listener.socket
+    socket = @port_binder.socket
     case data[0].split.first
       when "PING"
         socket.send("PONG", 0, data[1][3], data[1][1])
