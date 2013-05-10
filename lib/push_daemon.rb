@@ -4,7 +4,6 @@ require 'port_binder'
 require 'commands_catcher'
 require 'job'
 require 'command_factory'
-require 'shellwords'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
@@ -19,7 +18,7 @@ class PushDaemon
   attr_reader :worker, :port_binder
 
   def call(data)
-    command = CommandFactory.from(data)
+    command = CommandFactory.from_socket_message(data)
     command.run(self)
   end
 
