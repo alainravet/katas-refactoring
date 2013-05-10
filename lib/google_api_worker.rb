@@ -7,12 +7,18 @@ class GoogleApiWorker
 
   def initialize(nof_workers)
     @queue  = Queue.new
+    @client = HTTPClient.new
+    spawn(nof_workers)
+  end
 
-    client = HTTPClient.new
+#------------------------------------------------------------------------------
+private
+
+  def spawn(nof_workers)
     nof_workers.times do
       Thread.new do
         while data = queue.pop
-          client.post("https://android.googleapis.com/gcm/send", data, {
+          @client.post("https://android.googleapis.com/gcm/send", data, {
               "Authorization" => "key=AIzaSyCABSTd47XeIH",
               "Content-Type"  => "application/json"
           })
