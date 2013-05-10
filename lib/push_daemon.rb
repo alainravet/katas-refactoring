@@ -11,19 +11,18 @@ class PushDaemon
 
   def start
     @worker = GoogleApiWorker.new(10)
-    bind_to
-    process_requests
+    bind_to(@socket)
+    process_requests(@socket)
   end
 
 #------------------------------------------------------------------------------
 private
-  attr_reader :socket
 
-  def bind_to
+  def bind_to(socket)
     socket.bind("0.0.0.0", 6889)
   end
 
-  def process_requests
+  def process_requests(socket)
     while data = socket.recvfrom(4096)
       case data[0].split.first
         when "PING"
