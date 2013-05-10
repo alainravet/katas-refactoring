@@ -24,3 +24,17 @@ class PushDaemon
   end
 
 end
+
+# Data clump problem :
+# data =
+#   ["PING", ["AF_INET", 55560, "127.0.0.1", "127.0.0.1"]]
+#   ["SEND t0k3n \"Steve: What is up?\"", ["AF_INET", 55053, "127.0.0.1", "127.0.0.1"]]
+#
+# require 'shellwords'
+# Shellwords.shellsplit(data.first)  - http://www.ruby-doc.org/stdlib-1.9.3/libdoc/shellwords/rdoc/index.html
+#   >>["PING"]
+#   >>["SEND", "t0k3n", "Steve: What is up?"]
+#
+# require 'socket'
+# ai = Addrinfo.new(["AF_INET", 55053, "127.0.0.1", "127.0.0.1"])
+# ai.inspect # => "#<Addrinfo: 127.0.0.1:55053>"
