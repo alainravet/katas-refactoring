@@ -2,21 +2,16 @@
 
 require 'json'
 
-class Job::Send
+class Job::Send < Job::Base
 
-  def initialize(command_line_tokens, _, _, worker)
-    @command_line_tokens = command_line_tokens
-    @worker = worker
-  end
-
-  def run
+  def run(port_binder, worker)
     api_token = @command_line_tokens.rest[0]
     msg       = @command_line_tokens.rest[1]
     json = JSON.generate({
                              "registration_ids" => [api_token],
                              "data"             => {"alert" => msg}
                          })
-    @worker.queue << json
+    worker.queue << json
   end
 
 end

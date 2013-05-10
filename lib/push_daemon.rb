@@ -38,8 +38,8 @@ class PushDaemon
     address_parts = AddressParts.new(*data[1])
 
     COMMAND_FOR_VERB[command_line.verb].
-        new(command_line, address_parts, @port_binder, @worker).
-        run
+        new(command_line, address_parts).
+        run(@port_binder, @worker)
 
   end
 
