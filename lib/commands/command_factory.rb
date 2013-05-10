@@ -1,5 +1,6 @@
 require 'command_line'
 require 'address_parts'
+require 'job'
 
 class CommandFactory
 

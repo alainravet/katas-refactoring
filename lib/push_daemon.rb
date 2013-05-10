@@ -1,8 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
-require 'commands_catcher'
-require 'job'
+require 'commands/commands_catcher'
 require 'commands/command_factory'
 
 class PushDaemon
