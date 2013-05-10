@@ -9,10 +9,15 @@ class PushDaemon
   DEFAULT_NOF_WORKERS = 10
   DEFAULT_PORT        = 6889
 
+  def initialize(port: DEFAULT_PORT, nof_workers: DEFAULT_NOF_WORKERS)
+    @port         = port
+    @nof_workers  = nof_workers
+  end
+
   def start
-    @worker   = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
-    @port_binder = PortBinder.new(DEFAULT_PORT)
-    CommandsCatcher.new(self).listen(@port_binder)
+    @worker      = GoogleApiWorker.new(@nof_workers)
+    @port_binder = PortBinder.new(@port)
+    CommandsCatcher.new(self).listen_on(@port_binder)
   end
 
   attr_reader :worker, :port_binder
