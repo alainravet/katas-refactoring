@@ -4,15 +4,17 @@ require 'json'
 
 class Job::Send
 
-  def initialize(raw_data, worker)
-    @raw_data, @worker= raw_data, worker
+  def initialize(command_line_tokens, _, worker)
+    @command_line_tokens = command_line_tokens
+    @worker = worker
   end
 
   def run
-    @raw_data[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+    api_token = @command_line_tokens.rest[0]
+    msg       = @command_line_tokens.rest[1]
     json = JSON.generate({
-                             "registration_ids" => [$1],
-                             "data"             => {"alert" => $2}
+                             "registration_ids" => [api_token],
+                             "data"             => {"alert" => msg}
                          })
     @worker.queue << json
   end

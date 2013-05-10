@@ -3,12 +3,15 @@
 module Job
 
   class Ping
-    def initialize(raw_data, port_binder)
-      @raw_data, @port_binder = raw_data, port_binder
+    def initialize(command_line_tokens, address_parts, port_binder)
+      @port_binder = port_binder
+      _, @address_parts       = command_line_tokens, address_parts
     end
 
     def run
-      @port_binder.socket.send("PONG", 0, @raw_data[1][3], @raw_data[1][1])
+      address = @address_parts.addr
+      port    = @address_parts.port
+      @port_binder.socket.send("PONG", 0, address, port)
     end
   end
 

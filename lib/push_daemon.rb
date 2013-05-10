@@ -3,6 +3,7 @@ require 'google_api_worker'
 require 'port_binder'
 require 'commands_catcher'
 require 'job'
+require 'shellwords'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
@@ -14,27 +15,26 @@ class PushDaemon
     CommandsCatcher.new(self).listen(@port_binder)
   end
 
+  AddressParts = Struct.new(:prot, :port, :addr, :addr_2)
+
+  CommandLine  = Struct.new(:tokens) do
+    def verb ; tokens.first  end
+    def rest ; tokens[1..-1] end
+  end
+
   def call(data)
-    case data[0].split.first
+    # data =
+    #   ["PING", ["AF_INET", 55560, "127.0.0.1", "127.0.0.1"]]
+    #   ["SEND t0k3n \"Steve: What is up?\"", ["AF_INET", 55053, "127.0.0.1", "127.0.0.1"]]
+    command_line  = CommandLine.new(Shellwords.shellsplit(data[0]))
+    address_parts = AddressParts.new(*data[1])
+
+    case command_line.verb
       when "PING"
-        Job::Ping.new(data, @port_binder).run
+        Job::Ping.new(command_line, address_parts, @port_binder).run
       when "SEND"
-        Job::Send.new(data, @worker).run
+        Job::Send.new(command_line, address_parts, @worker).run
     end
   end
 
 end
-
-# Data clump problem :
-# data =
-#   ["PING", ["AF_INET", 55560, "127.0.0.1", "127.0.0.1"]]
-#   ["SEND t0k3n \"Steve: What is up?\"", ["AF_INET", 55053, "127.0.0.1", "127.0.0.1"]]
-#
-# require 'shellwords'
-# Shellwords.shellsplit(data.first)  - http://www.ruby-doc.org/stdlib-1.9.3/libdoc/shellwords/rdoc/index.html
-#   >>["PING"]
-#   >>["SEND", "t0k3n", "Steve: What is up?"]
-#
-# require 'socket'
-# ai = Addrinfo.new(["AF_INET", 55053, "127.0.0.1", "127.0.0.1"])
-# ai.inspect # => "#<Addrinfo: 127.0.0.1:55053>"
