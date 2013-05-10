@@ -1,5 +1,5 @@
 $:.unshift File.dirname(__FILE__)
-require 'post_to_google_api_workers_pool'
+require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
 require 'commands_catcher'
 require 'job'
