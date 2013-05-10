@@ -1,5 +1,5 @@
 $:.unshift File.dirname(__FILE__)
-require 'google_api_worker'
+require 'post_to_google_api_workers_pool'
 require 'port_binder'
 require 'commands_catcher'
 require 'job'
@@ -15,12 +15,12 @@ class PushDaemon
   end
 
   def start
-    @worker      = GoogleApiWorker.new(@nof_workers)
+    @workers_pool = PostToGoogleApiWorkersPool.new(@nof_workers)
     @port_binder = PortBinder.new(@port)
     CommandsCatcher.new(self).listen_on(@port_binder)
   end
 
-  attr_reader :worker, :port_binder
+  attr_reader :workers_pool, :port_binder
 
   def call(data)
     command = CommandFactory.from_raw_message(data)

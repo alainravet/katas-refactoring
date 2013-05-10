@@ -1,7 +1,7 @@
 require 'httpclient'
 require 'thread'
 
-class GoogleApiWorker
+class PostToGoogleApiWorkersPool
 
   attr_reader :queue
 
