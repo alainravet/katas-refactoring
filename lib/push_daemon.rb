@@ -6,10 +6,12 @@ require 'google_api_worker'
 require 'listener'
 
 class PushDaemon
+  DEFAULT_NOF_WORKERS = 10
+  DEFAULT_PORT        = 6889
 
   def start
-    @worker = GoogleApiWorker.new(10)
-    listener = Listener.new(6889)
+    @worker = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
+    listener = Listener.new(DEFAULT_PORT)
     process_requests(listener)
   end
 
