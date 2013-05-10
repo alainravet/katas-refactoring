@@ -22,6 +22,14 @@ class PushDaemon
     def rest ; tokens[1..-1] end
   end
 
+
+
+  COMMAND_FOR_VERB = {
+     'PING' => Job::Ping,
+     'SEND' => Job::Send,
+   }
+  COMMAND_FOR_VERB.default = Job::NullJob
+
   def call(data)
     # data =
     #   ["PING", ["AF_INET", 55560, "127.0.0.1", "127.0.0.1"]]
@@ -29,11 +37,10 @@ class PushDaemon
     command_line  = CommandLine.new(Shellwords.shellsplit(data[0]))
     address_parts = AddressParts.new(*data[1])
 
-    case command_line.verb
-      when "PING" then Job::Ping.new(command_line, address_parts, @port_binder, @worker)
-      when "SEND" then Job::Send.new(command_line, address_parts, @port_binder, @worker)
-      else Job::NullJob.new
-    end.run
+    COMMAND_FOR_VERB[command_line.verb].
+        new(command_line, address_parts, @port_binder, @worker).
+        run
+
   end
 
 end
