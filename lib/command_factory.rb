@@ -8,7 +8,7 @@ class CommandFactory
   #   ["SEND t0k3n \"Steve: What is up?\"", ["AF_INET", 55053, "127.0.0.1", "127.0.0.1"]]
   #
   def self.from_raw_message(data)
-    command_line  = CommandLine.new(Shellwords.shellsplit(data[0]))
+    command_line  = CommandLine.from_tokens(Shellwords.shellsplit(data[0]))
     address_parts = AddressParts.new(*data[1])
 
     command_class = COMMAND_FOR_VERB[command_line.verb]

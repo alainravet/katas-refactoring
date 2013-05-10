@@ -2,6 +2,10 @@ require 'shellwords'
 
 class CommandLine  < Struct.new(:tokens)
 
+  def self.from_tokens(tokens)
+    new(tokens)
+  end
+
   #----------------------------------------------------------------------------
   # QUERIES :
   #----------------------------------------------------------------------------
