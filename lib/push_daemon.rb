@@ -10,12 +10,13 @@ class PushDaemon
   DEFAULT_PORT        = 6889
 
   def start
-    worker   = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
-    listener = Listener.new(DEFAULT_PORT)
-    process_requests(self, listener, worker)
+    @worker   = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
+    @listener = Listener.new(DEFAULT_PORT)
+    process_requests(self, @listener)
   end
 
-  def call(data, socket, worker)
+  def call(data)
+    socket = @listener.socket
     case data[0].split.first
       when "PING"
         socket.send("PONG", 0, data[1][3], data[1][1])
@@ -25,17 +26,17 @@ class PushDaemon
                                  "registration_ids" => [$1],
                                  "data"             => {"alert" => $2}
                              })
-        worker.queue << json
+        @worker.queue << json
     end
   end
 
 #------------------------------------------------------------------------------
 private
 
-  def process_requests(zelf, listener, worker)
+  def process_requests(zelf, listener)
     socket = listener.socket
     while data = socket.recvfrom(maxlen=4096)
-      zelf.call(data, socket, worker)
+      zelf.call(data)
     end
   end
 
