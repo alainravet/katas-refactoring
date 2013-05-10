@@ -1,6 +1,6 @@
 require 'shellwords'
 
-class CommandLine  < Struct.new(:tokens)
+class RawCommand < Struct.new(:tokens)
 
   def self.from_tokens(tokens)
     new(tokens)
