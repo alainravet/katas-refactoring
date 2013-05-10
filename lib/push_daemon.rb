@@ -10,16 +10,16 @@ class PushDaemon
   DEFAULT_PORT        = 6889
 
   def start
-    @worker = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
+    worker   = GoogleApiWorker.new(DEFAULT_NOF_WORKERS)
     listener = Listener.new(DEFAULT_PORT)
-    process_requests(listener)
+    process_requests(listener, worker)
   end
 
 #------------------------------------------------------------------------------
 private
 
 
-  def process_requests(listener)
+  def process_requests(listener, worker)
     socket = listener.socket
     while data = socket.recvfrom(maxlen=4096)
       case data[0].split.first
@@ -31,7 +31,7 @@ private
                                    "registration_ids" => [$1],
                                    "data" => {"alert" => $2}
                                })
-          @worker.queue << json
+          worker.queue << json
       end
     end
   end
