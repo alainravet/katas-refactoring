@@ -2,7 +2,7 @@ $:.unshift File.dirname(__FILE__)
 require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
 require 'commands/commands_catcher'
-require 'commands/command_factory'
+require 'commands/job_factory'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
@@ -44,8 +44,8 @@ class PushDaemon
   #-----------------------------------------------------------------------------
 
   def call(data)
-    command = CommandFactory.from_raw_message(data)
-    command.run(self)
+    job = JobFactory.from_raw_message(data)
+    job.run(self)
   end
 
 end
