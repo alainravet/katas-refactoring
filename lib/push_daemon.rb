@@ -1,6 +1,3 @@
-require "json"
-require "socket"
-
 $:.unshift File.dirname(__FILE__)
 require 'google_api_worker'
 require 'port_binder'
@@ -22,12 +19,7 @@ class PushDaemon
       when "PING"
         Job::Ping.new(data, @port_binder).run
       when "SEND"
-        data[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
-        json = JSON.generate({
-                                 "registration_ids" => [$1],
-                                 "data"             => {"alert" => $2}
-                             })
-        @worker.queue << json
+        Job::Send.new(data, @worker).run
     end
   end
 
