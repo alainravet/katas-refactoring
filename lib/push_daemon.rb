@@ -16,11 +16,11 @@ class PushDaemon
     CommandsCatcher.new(self).listen(@port_binder)
   end
 
+  attr_reader :worker, :port_binder
+
   def call(data)
     command = CommandFactory.from(data)
-    command.run(@port_binder, @worker)
-
+    command.run(self)
   end
-
 
 end

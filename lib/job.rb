@@ -8,7 +8,7 @@ module Job
   end
 
   class NullJob < Base
-    def run(_,_) ; end
+    def run(_) ; end
   end
 
 end
