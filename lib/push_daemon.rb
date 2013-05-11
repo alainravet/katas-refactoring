@@ -18,12 +18,11 @@ class PushDaemon
   # QUERIES :
   #-----------------------------------------------------------------------------
 
-  attr_reader :workers_pool, :port_binder
-
   #-----------------------------------------------------------------------------
   # COMMANDS :
   #-----------------------------------------------------------------------------
   include SimpleSocketEventer
+  JobContext = Struct.new(:workers_pool, :port_binder)
 
   def start
     start_the_workers_pool()
@@ -33,7 +32,8 @@ class PushDaemon
     on_new_data(@port_binder.socket) do |raw_data|
       request = NotificationRequest.from(raw_data)
       job     = JobFactory.for_request(request)
-      job.run(self)
+      context = JobContext.new(@workers_pool, @port_binder)  # what a job needs to know
+      job.run context
     end
   end
 
