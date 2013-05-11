@@ -7,15 +7,15 @@ class PushDaemon
 
   def initialize
     queue  = Queue.new
-    start_pool_of__wait_for_internal_notification_request_and_post_to_google_notifier__workers(queue, 10)
-    socket = listening_socket_for_internal_notifications_requests("0.0.0.0", 6889)
-    wait_for_and_process_external_notifications_requests(queue, socket)
+    start_pool_of__post_to_google_notifier__workers(queue, 10)
+    socket = listening_socket_for_incoming_requests("0.0.0.0", 6889)
+    wait_for_and_process_incoming_requests(queue, socket)
   end
 
   #-----------------------------------------------------------------------------
   private
 
-    def start_pool_of__wait_for_internal_notification_request_and_post_to_google_notifier__workers(queue, pool_size)
+    def start_pool_of__post_to_google_notifier__workers(queue, pool_size)
       client = HTTPClient.new
       pool_size.times do
         Thread.new do
@@ -29,13 +29,13 @@ class PushDaemon
       end
     end
 
-    def listening_socket_for_internal_notifications_requests(address, port)
+    def listening_socket_for_incoming_requests(address, port)
       socket = UDPSocket.new
       socket.bind(address, port)
       socket
     end
 
-    def wait_for_and_process_external_notifications_requests(queue, socket)
+    def wait_for_and_process_incoming_requests(queue, socket)
       while data = socket.recvfrom(4096)
         case data[0].split.first
           when "PING"
