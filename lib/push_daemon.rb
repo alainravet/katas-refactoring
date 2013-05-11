@@ -1,52 +1,31 @@
 require "json"
-require "thread"
-require "httpclient"
 require "socket"
+
+require_relative 'output/workers'
+require_relative 'output/jobs'
+require_relative 'input/incoming_requests_socket'
 
 class PushDaemon
 
   def initialize
-    socket = listening_socket_for_incoming_requests("0.0.0.0", 6889)
+    socket = IncomingRequestsSocket.new("0.0.0.0", 6889)
     queue  = Queue.new
-    start_pool_of__post_to_google_notifier__workers(queue, 10)
+    PoolOfSendNotificationRequestWorkers.
+        new(queue, 10).
+        start
     wait_for_and_process_incoming_requests(queue, socket)
   end
 
-  #-----------------------------------------------------------------------------
   private
 
-    def start_pool_of__post_to_google_notifier__workers(queue, pool_size)
-      client = HTTPClient.new
-      pool_size.times do
-        Thread.new do
-          while data = queue.pop
-            client.post("https://android.googleapis.com/gcm/send", data, {
-                "Authorization" => "key=AIzaSyCABSTd47XeIH",
-                "Content-Type"  => "application/json"
-            })
-          end
-        end
-      end
-    end
 
-    def listening_socket_for_incoming_requests(address, port)
-      socket = UDPSocket.new
-      socket.bind(address, port)
-      socket
-    end
+  def wait_for_and_process_incoming_requests(queue, socket)
 
-    def wait_for_and_process_incoming_requests(queue, socket)
       while data = socket.recvfrom(4096)
-        case data[0].split.first
-          when "PING"
-            socket.send("PONG", 0, data[1][3], data[1][1])
-          when "SEND"
-            data[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
-            json = JSON.generate({
-                                     "registration_ids" => [$1],
-                                     "data"             => {"alert" => $2}
-                                 })
-            queue << json
+        mesg, sender_addrinfo = *data
+        case mesg.split.first
+          when "PING" then Job::Ping.new(mesg, sender_addrinfo, queue, socket).run
+          when "SEND" then Job::Send.new(mesg, sender_addrinfo, queue, socket).run
         end
       end
     end
