@@ -7,7 +7,7 @@ module Job
     def run(context)
       address = address_parts.addr
       port    = address_parts.port
-      context.port_binder.socket.send("PONG", 0, address, port)
+      context.socket.send("PONG", 0, address, port)
     end
 
   end

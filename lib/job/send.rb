@@ -11,7 +11,7 @@ class Job::Send < Job::Base
                              "registration_ids" => [api_token],
                              "data"             => {"alert" => msg}
                          })
-    context.workers_pool.queue << json
+    context.queue << json
   end
 
 end
