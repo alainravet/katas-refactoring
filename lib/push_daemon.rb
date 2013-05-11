@@ -7,11 +7,11 @@ require_relative 'input/incoming_requests_socket'
 
 class PushDaemon
 
-  def initialize
-    socket = IncomingRequestsSocket.new("0.0.0.0", 6889)
+  def initialize(api_key, port: 6889, pool_size:10)
+    socket = IncomingRequestsSocket.new("0.0.0.0", port)
     queue  = Queue.new
     PoolOfSendNotificationRequestWorkers.
-        new(queue, 10).
+        new(queue, pool_size, api_key).
         start
     wait_for_and_process_incoming_requests(queue, socket)
   end
