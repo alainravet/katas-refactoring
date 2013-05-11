@@ -7,6 +7,12 @@ module Job
   end
 
 
+  class NullObject < Base
+    def run
+    end
+  end
+
+
   class Ping < Base
     def run
       @socket.send("PONG", 0, @sender_addrinfo[3], @sender_addrinfo[1])
