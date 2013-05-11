@@ -1,7 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
-require 'inputs/commands_catcher'
+require 'socket_eventer'
 require 'job/job_factory'
 
 class PushDaemon
@@ -22,30 +22,23 @@ class PushDaemon
   #-----------------------------------------------------------------------------
   # COMMANDS :
   #-----------------------------------------------------------------------------
+  include SocketEventer
 
   def start
     start_the_workers_pool()
-    start_waiting_for_commands()
+
+    @port_binder = PortBinder.new(@port)
+
+    on_new_data(@port_binder.socket) do |data|
+      job = JobFactory.from_raw_message(data)
+      job.run(self)
+    end
   end
 
   private
     def start_the_workers_pool
       @workers_pool = PostToGoogleApiWorkersPool.new(@nof_workers)
     end
-
-    def start_waiting_for_commands
-      @port_binder = PortBinder.new(@port)
-      CommandsCatcher.new(self, @port_binder).wait_for_commands
-    end
   public
-
-  #-----------------------------------------------------------------------------
-  # CALLBACK :
-  #-----------------------------------------------------------------------------
-
-  def call(data)
-    job = JobFactory.from_raw_message(data)
-    job.run(self)
-  end
 
 end
