@@ -1,7 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
-require 'socket_eventer'
+require 'simple_socket_eventer'
 require 'job/job_factory'
 
 class PushDaemon
@@ -22,7 +22,7 @@ class PushDaemon
   #-----------------------------------------------------------------------------
   # COMMANDS :
   #-----------------------------------------------------------------------------
-  include SocketEventer
+  include SimpleSocketEventer
 
   def start
     start_the_workers_pool()
