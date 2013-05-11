@@ -1,15 +1,13 @@
+require "json"
+require "thread"
+require "httpclient"
+require "socket"
+
 class PushDaemon
 
   def initialize
-    require "json"
-    require "thread"
-    require "httpclient"
-    require "socket"
-
-    queue  = Queue.new
     client = HTTPClient.new
-    socket = UDPSocket.new
-
+    queue  = Queue.new
     10.times do
       Thread.new do
         while data = queue.pop
@@ -21,6 +19,7 @@ class PushDaemon
       end
     end
 
+    socket = UDPSocket.new
     socket.bind("0.0.0.0", 6889)
 
     while data = socket.recvfrom(4096)
