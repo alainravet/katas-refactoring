@@ -6,9 +6,9 @@ require "socket"
 class PushDaemon
 
   def initialize
+    socket = listening_socket_for_incoming_requests("0.0.0.0", 6889)
     queue  = Queue.new
     start_pool_of__post_to_google_notifier__workers(queue, 10)
-    socket = listening_socket_for_incoming_requests("0.0.0.0", 6889)
     wait_for_and_process_incoming_requests(queue, socket)
   end
 
