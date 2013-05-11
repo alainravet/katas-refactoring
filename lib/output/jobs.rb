@@ -1,7 +1,8 @@
 module JobFactory
 
   def self.find_job_for_incoming_request(mesg, sender_addrinfo, queue, socket)
-    job = case mesg.split.first
+    verb = mesg.split.first
+    job = case verb
       when "PING" then Job::Ping.new(mesg, sender_addrinfo, queue, socket)
       when "SEND" then Job::Send.new(mesg, sender_addrinfo, queue, socket)
       else
