@@ -3,6 +3,7 @@ require 'workers/post_to_google_api_workers_pool'
 require 'port_binder'
 require 'simple_socket_eventer'
 require 'job/job_factory'
+require 'inputs/notification_request'
 
 class PushDaemon
   DEFAULT_NOF_WORKERS = 10
@@ -29,8 +30,9 @@ class PushDaemon
 
     @port_binder = PortBinder.new(@port)
 
-    on_new_data(@port_binder.socket) do |data|
-      job = JobFactory.from_raw_message(data)
+    on_new_data(@port_binder.socket) do |raw_data|
+      request = NotificationRequest.from(raw_data)
+      job     = JobFactory.for_request(request)
       job.run(self)
     end
   end

@@ -1,11 +1,8 @@
-require_relative '../inputs/notification_request'
 require 'job'
 
 class JobFactory
 
-  def self.from_raw_message(raw_data)
-    request = NotificationRequest.from(raw_data)
-
+  def self.for_request(request)
     job_class = JOB_FOR_VERB[request.verb]
     job_class.new(request)
   end
