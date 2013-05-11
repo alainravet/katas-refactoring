@@ -3,8 +3,9 @@ require "json"
 module Job
 
   class Base
-    def initialize(mesg, sender_addrinfo, queue, socket)
-      @mesg, @sender_addrinfo, @queue, @socket = mesg, sender_addrinfo, queue, socket
+    def initialize(request, queue, socket)
+      @request = request
+      @queue, @socket = queue, socket
     end
   end
 
@@ -17,14 +18,14 @@ module Job
 
   class Ping < Base
     def run
-      @socket.send("PONG", 0, @sender_addrinfo[3], @sender_addrinfo[1])
+      @socket.send("PONG", 0, @request.sender_address, @request.sender_port)
     end
   end
 
 
   class Send < Base
     def run
-      @mesg[5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+      @request.mesg_rest.match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
       json = JSON.generate({
                                "registration_ids" => [$1],
                                "data"             => {"alert" => $2}
@@ -44,9 +45,8 @@ module JobFactory
   }
   JOB_FOR_INCOMING_REQUEST.default = Job::NullObject
 
-  def self.find_job_for_incoming_request(mesg, sender_addrinfo, queue, socket)
-    verb = mesg.split.first
-    JOB_FOR_INCOMING_REQUEST[verb].new(mesg, sender_addrinfo, queue, socket)
+  def self.find_job_for_incoming_request(request, queue, socket)
+    JOB_FOR_INCOMING_REQUEST[request.verb].new(request, queue, socket)
   end
 
 end

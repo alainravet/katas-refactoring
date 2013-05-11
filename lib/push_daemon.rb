@@ -18,8 +18,8 @@ class PushDaemon
   include SimpleSocketEventer
 
     def wait_for_and_process_incoming_requests(queue, socket)
-      on_incoming_request(socket) do |mesg, sender_addrinfo|
-        job = JobFactory.find_job_for_incoming_request(mesg, sender_addrinfo, queue, socket)
+      on_incoming_request(socket) do |request|
+        job = JobFactory.find_job_for_incoming_request(request, queue, socket)
         job.run
       end
     end
