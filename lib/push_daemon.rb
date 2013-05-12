@@ -22,10 +22,9 @@ class PushDaemon
 
     APP_CONFIG[:POOL_SIZE].times do
       Thread.new do
-        api_key = APP_CONFIG[:API_KEY]
         on_notification_to_post(jobs_queue) do |notification_text|
           api_client.post("https://android.googleapis.com/gcm/send", notification_text, {
-            "Authorization" => "key=#{api_key}",
+            "Authorization" => "key=#{APP_CONFIG[:API_KEY]}",
             "Content-Type" => "application/json"
           })
         end
