@@ -9,8 +9,23 @@ APP_CONFIG = {
   :LISTENING_PORT => 6889,
   :POOL_SIZE      => 10,
 }
+module Utils
+  def on_notification_to_post(queue)
+    while notification_text = queue.pop
+      yield notification_text
+    end
+  end
+
+  def on_incoming_request(socket)
+    while data = socket.recvfrom(4096)
+      mesg, sender_addrinfo = *data
+      yield mesg, sender_addrinfo
+    end
+  end
+end
 
 class PushDaemon
+  include Utils
 
   def initialize
     queue  = Queue.new
@@ -20,8 +35,8 @@ class PushDaemon
     APP_CONFIG[:POOL_SIZE].times do
       Thread.new do
         api_key = APP_CONFIG[:API_KEY]
-        while data = queue.pop
-          client.post("https://android.googleapis.com/gcm/send", data, {
+        on_notification_to_post(queue) do |notification_text|
+          client.post("https://android.googleapis.com/gcm/send", notification_text, {
             "Authorization" => "key=#{api_key}",
             "Content-Type" => "application/json"
           })
@@ -31,9 +46,7 @@ class PushDaemon
 
     socket.bind("0.0.0.0", APP_CONFIG[:LISTENING_PORT])
 
-    while data = socket.recvfrom(4096)
-
-      mesg, sender_addrinfo = *data
+    on_incoming_request(socket) do |mesg, sender_addrinfo|
       msg_verb        = mesg.split.first # 'PING', 'SEND'
       msg_rest        = mesg[5..-1]
       sender_address  = sender_addrinfo[3]
