@@ -30,7 +30,15 @@ module Job
                                "registration_ids" => [$1],
                                "data"             => {"alert" => $2}
                            })
-      @queue << json
+      @queue << [Job::Send, data=json]
+    end
+
+    def self.call(worker_context, data)
+      c = worker_context
+      c.shared_client.post("https://android.googleapis.com/gcm/send", data, {
+          "Authorization" => "key=" + c.api_key ,
+          "Content-Type"  => "application/json"
+      })
     end
   end
 
