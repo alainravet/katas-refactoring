@@ -7,19 +7,16 @@ class PushDaemon
 
   def initialize
     jobs_queue    = Queue.new
-    client_to_api = HTTPClient.new
-    incoming_requests_source = UDPSocket.new
 
-    spawn_workers_that_post_to_api(jobs_queue, client_to_api)
-
-    incoming_requests_source.bind("0.0.0.0", 6889)
-    wait_for_and_perform_or_delegate_incoming_requests(jobs_queue, incoming_requests_source)
+    spawn_workers_that_post_to_api(jobs_queue)
+    wait_for_and_perform_or_delegate_incoming_requests(jobs_queue)
   end
 
   #-----------------------------------------------------------------------------
   private
 
-    def spawn_workers_that_post_to_api(jobs_queue, client_to_api)
+    def spawn_workers_that_post_to_api(jobs_queue)
+      client_to_api = HTTPClient.new
       10.times do
         Thread.new do
           while notification_post_job_payload = jobs_queue.pop
@@ -34,7 +31,10 @@ class PushDaemon
       end
     end
 
-    def wait_for_and_perform_or_delegate_incoming_requests(jobs_queue, incoming_requests_source)
+    def wait_for_and_perform_or_delegate_incoming_requests(jobs_queue)
+      incoming_requests_source = UDPSocket.new
+      incoming_requests_source.bind("0.0.0.0", 6889)
+
       while req = incoming_requests_source.recvfrom(4096)
         msg, sender_addrinfo = *req
         msg_verb             = msg.split.first
