@@ -15,7 +15,7 @@ class PoolOfSendNotificationRequestWorkers
 
   def wait_for_and_perform_task
     -> do
-      on_notification_request(@queue) do |job_class, data|
+      on_new_job(@queue) do |job_class, data|
         job_class.call(worker_locals, data)
       end
     end
@@ -24,7 +24,7 @@ class PoolOfSendNotificationRequestWorkers
   #-----------------------------------------------------------------------------
   private
 
-    def on_notification_request(queue)
+    def on_new_job(queue)
       while job_description = queue.pop
         job_class, data = *job_description
         yield job_class, data
