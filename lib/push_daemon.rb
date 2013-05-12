@@ -32,14 +32,23 @@ class PushDaemon
     socket.bind("0.0.0.0", APP_CONFIG[:LISTENING_PORT])
 
     while data = socket.recvfrom(4096)
-      case data[0].split.first
+
+      mesg, sender_addrinfo = *data
+      msg_verb        = mesg.split.first # 'PING', 'SEND'
+      msg_rest        = mesg[5..-1]
+      sender_address  = sender_addrinfo[3]
+      sender_port     = sender_addrinfo[1]
+
+      case msg_verb
       when "PING"
-        socket.send("PONG", 0, data[1][3], data[1][1])
+        socket.send("PONG", 0, sender_address, sender_port)
       when "SEND"
-        data[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+        msg_rest.match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+        registration_id   = $1
+        notification_text = $2
         json = JSON.generate({
-          "registration_ids" => [$1],
-          "data" => { "alert" => $2 }
+          "registration_ids" => [registration_id],
+          "data" => { "alert" => notification_text}
         })
         queue << json
       end
