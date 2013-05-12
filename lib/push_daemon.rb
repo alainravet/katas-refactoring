@@ -6,14 +6,14 @@ require "socket"
 class PushDaemon
 
   def initialize
-    queue  = Queue.new
-    client = HTTPClient.new
-    socket = UDPSocket.new
+    jobs_queue    = Queue.new
+    client_to_api = HTTPClient.new
+    incoming_requests_source = UDPSocket.new
 
     10.times do
       Thread.new do
-        while data = queue.pop
-          client.post("https://android.googleapis.com/gcm/send", data, {
+        while data = jobs_queue.pop
+          client_to_api.post("https://android.googleapis.com/gcm/send", data, {
             "Authorization" => "key=AIzaSyCABSTd47XeIH",
             "Content-Type" => "application/json"
           })
@@ -21,19 +21,19 @@ class PushDaemon
       end
     end
 
-    socket.bind("0.0.0.0", 6889)
+    incoming_requests_source.bind("0.0.0.0", 6889)
 
-    while data = socket.recvfrom(4096)
-      case data[0].split.first
+    while req = incoming_requests_source.recvfrom(4096)
+      case req[0].split.first
       when "PING"
-        socket.send("PONG", 0, data[1][3], data[1][1])
+        incoming_requests_source.send("PONG", 0, req[1][3], req[1][1])
       when "SEND"
-        data[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
-        json = JSON.generate({
+        req[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+        notification_post_job_payload = JSON.generate({
           "registration_ids" => [$1],
           "data" => { "alert" => $2 }
         })
-        queue << json
+        jobs_queue << notification_post_job_payload
       end
     end
   end
