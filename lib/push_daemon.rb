@@ -24,14 +24,22 @@ class PushDaemon
     incoming_requests_source.bind("0.0.0.0", 6889)
 
     while req = incoming_requests_source.recvfrom(4096)
-      case req[0].split.first
+      msg, sender_addrinfo = *req
+      msg_verb = msg.split.first
+      msg_rest = msg[5..-1]
+
+      case msg_verb
       when "PING"
-        incoming_requests_source.send("PONG", 0, req[1][3], req[1][1])
+        sender_ip_address = sender_addrinfo[3]
+        sender_port       = sender_addrinfo[1]
+        incoming_requests_source.send("PONG", 0, sender_ip_address, sender_port)
       when "SEND"
-        req[0][5..-1].match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+        msg_rest.match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+        registration_id   = $1
+        notification_text = $2
         notification_post_job_payload = JSON.generate({
-          "registration_ids" => [$1],
-          "data" => { "alert" => $2 }
+          "registration_ids" => [registration_id],
+          "data" => { "alert" => notification_text}
         })
         jobs_queue << notification_post_job_payload
       end
