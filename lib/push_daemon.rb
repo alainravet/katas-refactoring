@@ -10,14 +10,14 @@ class PushDaemon
     PoolOfSendNotificationRequestWorkers.
         new(queue, pool_size, api_key).
         start
-    wait_for_and_process_incoming_requests(queue, socket)
+    wait_for_and_process_incoming_requests(socket, queue)
   end
 
   private
 
   include SimpleSocketEventer
 
-    def wait_for_and_process_incoming_requests(queue, socket)
+    def wait_for_and_process_incoming_requests(socket, queue)
       on_incoming_request(socket) do |request|
         job = JobFactory.find_job_for_incoming_request(request, queue, socket)
         job.run
