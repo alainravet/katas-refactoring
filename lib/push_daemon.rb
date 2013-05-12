@@ -54,15 +54,15 @@ class PushDaemon
   include Utils
 
   def initialize
-    queue  = Queue.new
-    client = HTTPClient.new
-    socket = UDPSocket.new
+    jobs_queue  = Queue.new
+    api_client  = HTTPClient.new
+    incoming_requests_source = UDPSocket.new
 
     APP_CONFIG[:POOL_SIZE].times do
       Thread.new do
         api_key = APP_CONFIG[:API_KEY]
-        on_notification_to_post(queue) do |notification_text|
-          client.post("https://android.googleapis.com/gcm/send", notification_text, {
+        on_notification_to_post(jobs_queue) do |notification_text|
+          api_client.post("https://android.googleapis.com/gcm/send", notification_text, {
             "Authorization" => "key=#{api_key}",
             "Content-Type" => "application/json"
           })
@@ -70,21 +70,21 @@ class PushDaemon
       end
     end
 
-    socket.bind("0.0.0.0", APP_CONFIG[:LISTENING_PORT])
+    incoming_requests_source.bind("0.0.0.0", APP_CONFIG[:LISTENING_PORT])
 
-    on_incoming_request(socket) do |req|
+    on_incoming_request(incoming_requests_source) do |req|
       case req.msg_verb
       when "PING"
-        socket.send("PONG", 0, req.sender_ip_address, req.sender_port)
+        incoming_requests_source.send("PONG", 0, req.sender_ip_address, req.sender_port)
       when "SEND"
         req.msg_rest.match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
         registration_id   = $1
         notification_text = $2
-        json = JSON.generate({
+        notification_to_post_details = JSON.generate({
           "registration_ids" => [registration_id],
           "data" => { "alert" => notification_text}
         })
-        queue << json
+        jobs_queue << notification_to_post_details
       end
     end
   end
