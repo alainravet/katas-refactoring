@@ -9,10 +9,14 @@ class PoolOfSendNotificationRequestWorkers
 
   def start
     @pool_size.times do
-      Thread.new do
-        on_notification_request(@queue) do |job_class, data|
-          job_class.call(worker_locals, data)
-        end
+      Thread.new { wait_for_and_perform_task.call }
+    end
+  end
+
+  def wait_for_and_perform_task
+    -> do
+      on_notification_request(@queue) do |job_class, data|
+        job_class.call(worker_locals, data)
       end
     end
   end
