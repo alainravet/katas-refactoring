@@ -3,6 +3,13 @@ require "thread"
 require "httpclient"
 require "socket"
 
+APP_CONFIG = {
+  :API_KEY        => 'AIzaSyCABSTd47XeIH',
+
+  :LISTENING_PORT => 6889,
+  :POOL_SIZE      => 10,
+}
+
 class PushDaemon
 
   def initialize
@@ -10,18 +17,19 @@ class PushDaemon
     client = HTTPClient.new
     socket = UDPSocket.new
 
-    10.times do
+    APP_CONFIG[:POOL_SIZE].times do
       Thread.new do
+        api_key = APP_CONFIG[:API_KEY]
         while data = queue.pop
           client.post("https://android.googleapis.com/gcm/send", data, {
-            "Authorization" => "key=AIzaSyCABSTd47XeIH",
+            "Authorization" => "key=#{api_key}",
             "Content-Type" => "application/json"
           })
         end
       end
     end
 
-    socket.bind("0.0.0.0", 6889)
+    socket.bind("0.0.0.0", APP_CONFIG[:LISTENING_PORT])
 
     while data = socket.recvfrom(4096)
       case data[0].split.first
