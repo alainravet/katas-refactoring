@@ -12,8 +12,10 @@ class PushDaemon
 
     10.times do
       Thread.new do
-        while data = jobs_queue.pop
-          client_to_api.post("https://android.googleapis.com/gcm/send", data, {
+        while notification_post_job_payload = jobs_queue.pop
+          client_to_api.post("https://android.googleapis.com/gcm/send",
+                             notification_post_job_payload,
+          {
             "Authorization" => "key=AIzaSyCABSTd47XeIH",
             "Content-Type" => "application/json"
           })
