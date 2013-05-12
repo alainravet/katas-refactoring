@@ -9,7 +9,31 @@ APP_CONFIG = {
   :LISTENING_PORT => 6889,
   :POOL_SIZE      => 10,
 }
+
+#-------------------------------------------------------------------------------
+
+module DataTypes
+
+  # wrap and smartify input data like :
+  #     ["PING",                       ["AF_INET", 53794, "127.0.0.1", "127.0.0.1"]]
+  #       ^^^^                                     ^^^^^               ^^^^^^^^^^^
+  #       verb                                     port                 ip address
+  #     ["SEND t0k3n \"Hello World\"", ["AF_INET", 62139, "127.0.0.1", "127.0.0.1"]]
+  #            ^^^^^   ^^^^^^^^^^^
+  IncomingRequest = Struct.new(:message, :sender_addrinfo) do
+    def msg_verb          ; message.split.first end   # 'PING', 'SEND'
+    def msg_rest          ; message[5..-1]      end   # 'Hello World'
+    def sender_port       ; sender_addrinfo[1]  end   # 62139
+    def sender_ip_address ; sender_addrinfo[3]  end   # '127.0.0.1'
+  end
+
+end
+
+#-------------------------------------------------------------------------------
+
 module Utils
+  include DataTypes
+
   def on_notification_to_post(queue)
     while notification_text = queue.pop
       yield notification_text
@@ -19,10 +43,12 @@ module Utils
   def on_incoming_request(socket)
     while data = socket.recvfrom(4096)
       mesg, sender_addrinfo = *data
-      yield mesg, sender_addrinfo
+      yield IncomingRequest.new(mesg, sender_addrinfo)
     end
   end
 end
+
+#-------------------------------------------------------------------------------
 
 class PushDaemon
   include Utils
@@ -46,17 +72,12 @@ class PushDaemon
 
     socket.bind("0.0.0.0", APP_CONFIG[:LISTENING_PORT])
 
-    on_incoming_request(socket) do |mesg, sender_addrinfo|
-      msg_verb        = mesg.split.first # 'PING', 'SEND'
-      msg_rest        = mesg[5..-1]
-      sender_address  = sender_addrinfo[3]
-      sender_port     = sender_addrinfo[1]
-
-      case msg_verb
+    on_incoming_request(socket) do |req|
+      case req.msg_verb
       when "PING"
-        socket.send("PONG", 0, sender_address, sender_port)
+        socket.send("PONG", 0, req.sender_ip_address, req.sender_port)
       when "SEND"
-        msg_rest.match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
+        req.msg_rest.match(/([a-zA-Z0-9_\-]*) "([^"]*)/)
         registration_id   = $1
         notification_text = $2
         json = JSON.generate({
